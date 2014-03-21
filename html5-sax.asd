@@ -7,9 +7,11 @@
   :license "Specify license here"
   :depends-on (#:alexandria
                #:serapeum
+               #:fset
                #:cxml
                #:cxml-stp
-               #:cl-html5-parser)
+               #:cl-html5-parser
+               #:puri)
   :components ((:file "package")
                (:file "html5-sax")
                (:file "sink")))
