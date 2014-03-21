@@ -24,9 +24,9 @@
 
 (defconst xmlns-ns "http://www.w3.org/2000/xmlns/")
 
-(defvar *foreign*)
-(setf (documentation '*foreign* 'variable)
-      "Non-nil in a foreign (SVG or Mathml) element.")
+(defvar *base*)
+(setf (documentation '*base* 'variable)
+      "The current base URL.")
 
 (defgeneric serialize-node (type node)
   (:documentation "Serialize NODE, of TYPE, to the current handler."))
@@ -78,11 +78,20 @@
         (#.xmlns-ns "xmlns")
         (t ""))))
 
+(defun find-attribute (node qname)
+  (html5-parser:element-map-attributes
+   (lambda (name ns value)
+     (when (string= name qname)
+       (return-from find-attribute
+         (values name ns value))))
+   node))
+
 (defun serialize-dom (node handler)
   "Serialize NODE, an HTML5 document, to HANDLER as SAX events."
   ;; Since HTML5 has (limited) support for namespaces, we have to use
   ;; SAX instead of HAX.
-  (let ((sax:*use-xmlns-namespace* nil))
+  (let ((sax:*use-xmlns-namespace* nil)
+        (*base* nil))
     (cxml:with-xml-output handler
       (cxml:with-namespace ("" xhtml-ns)
         (serialize node)))))
@@ -123,12 +132,22 @@
   (let* ((name (html5-parser:node-name node)))
     (if (not (nc-name-p name))
         (html5-parser:element-map-children #'serialize node)
-        (flet ((serialize ()
+        (flet ((serialize (&aux (base *base*))
                  (cxml:with-element name
                    (html5-parser:element-map-attributes
                     (lambda (name ns value)
                       (cond ((equal name "lang")
                              (cxml:attribute* "xml" "lang" value))
+                            ((and base (equal name "href"))
+                             (ignoring puri:uri-parse-error
+                               (let ((value
+                                       (~> value
+                                           puri:parse-uri
+                                           (puri:merge-uris base)
+                                           (write-to-string :pretty nil
+                                                            :escape nil)
+                                           (escape-text t))))
+                                 (cxml:attribute name value))))
                             ((string^= "xmlns" name))
                             ((nc-name-p name)
                              (if (no ns)
@@ -141,6 +160,10 @@
                    (html5-parser:element-map-children #'serialize node))))
           (declare (dynamic-extent #'serialize))
           (string-case name
+            ("base"
+             (when-let (href (nth-value 2 (find-attribute node "href")))
+               (ignoring puri:uri-parse-error
+                 (setf *base* (puri:parse-uri href)))))
             ("math" (cxml:with-namespace ("" mathml-ns)
                       (cxml:with-namespace ("xlink" xlink-ns)
                         (serialize))))
