@@ -7,13 +7,18 @@ serializes it to SAX events.
                                 (cxml:make-string-sink)))
 
 HTML5-SAX understands namespaces, the `lang` attribute, and the `base`
-element, and handles several corner cases where XML is more strict
-than HTML.
+element, and handles the corner cases where XML is more strict than
+HTML.
 
-HTML5-SAX is intended as a complete replacement for [CHTML][chtml]:
-CHTML is somewhat faster, but experience at TBRSS has shown that the
-HTML5 parser is stabler and gets better results, even on older
-documents.
+HTML5-SAX is intended as a replacement for [CHTML][chtml]: CHTML is
+faster, but experience at TBRSS has shown that the HTML5 parser is
+more stable and gets better results, even on older documents.
+
+It also replaces `chtml:make-string-sink` for serialization:
+
+     (stp:serialize dom (html5-sax:make-html5-sink))
+
+This produces an HTML5 document with a UTF-8 charset declaration.
 
 HTML5-SAX also extends `html5-parser:parse-html5` directly:
 
