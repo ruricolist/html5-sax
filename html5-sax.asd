@@ -14,4 +14,5 @@
                #:puri)
   :components ((:file "package")
                (:file "html5-sax")
-               (:file "sink")))
+               (:file "sink")
+               (:file "transform")))

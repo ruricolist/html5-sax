@@ -36,12 +36,11 @@
   "Is C a character allowed in XML text?"
   (declare (optimize speed))
   (let ((code (char-code c)))
-    (declare (dynamic-extent code))
-    (or (<= 32 code #xd7ff)
+    (if (< code 32)
         (case code ((9 10 13) t))
-        #+rune-is-utf-16 (<= #xD800 code #xDFFF)
-        (<= #xe000 code #xfffd)
-        #-rune-is-utf-16 (<= #x10000 code #x10ffff))))
+        (or (<= code #xd7ff)
+            (<= #xe000 code #xfffd)
+            (<= #x10000 code #x10ffff)))))
 
 ;;; `namep' and `nc-name-p' are stolen from CXML-STP.
 
