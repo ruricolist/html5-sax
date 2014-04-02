@@ -119,10 +119,7 @@
                         (equal (html5-parser:node-name node) "html")
                         (return node)))
                  node))))
-    (cxml:with-element "html"
-      (html5-parser:element-map-children (lambda (node)
-                                           (serialize node))
-                                         root))))
+    (serialize-node :element root)))
 
 (defmethod serialize-node ((type (eql :fragment)) node)
   (html5-parser:element-map-children #'serialize node))
