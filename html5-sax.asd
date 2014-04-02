@@ -2,9 +2,9 @@
 
 (asdf:defsystem #:html5-sax
   :serial t
-  :description "Describe html5-sax here"
-  :author "Your Name <your.name@example.com>"
-  :license "Specify license here"
+  :description "Bridge between HTML5 and SAX."
+  :author "Paul M. Rodriguez <pmr@ruricolist.com>"
+  :license "MIT"
   :depends-on (#:alexandria
                #:serapeum
                #:fset
