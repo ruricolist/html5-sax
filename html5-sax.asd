@@ -2,7 +2,7 @@
 
 (asdf:defsystem #:html5-sax
   :serial t
-  :description "Bridge between HTML5 and SAX."
+  :description "Bridge HTML5 and CXML"
   :author "Paul M. Rodriguez <pmr@ruricolist.com>"
   :license "MIT"
   :depends-on (#:alexandria

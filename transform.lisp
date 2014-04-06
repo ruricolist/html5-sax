@@ -1,6 +1,6 @@
 (in-package #:html5-sax)
 
-(defmethod html5-parser:transform-html5-dom ((to-type (eql :xml)) node)
+(defmethod html5-parser:transform-html5-dom ((to-type (eql :xhtml)) node)
   (serialize-dom node (cxml:make-string-sink)))
 
 (defmethod html5-parser:transform-html5-dom ((to-type (eql :cxml-dom)) node)
