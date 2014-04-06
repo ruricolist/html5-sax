@@ -8,16 +8,29 @@
                             :specified-p t)))
 
 (defclass html5-sink (sax:default-handler)
-  ((stream :initform (make-string-output-stream) :accessor stream)
-   (comments :initarg :allow-comments :accessor allow-comments?)
+  ((stream :initarg :stream :accessor stream)
+   (comments :initarg :keep-comments :accessor keep-comments?)
    (meta-blocked :initform nil :accessor meta-blocked?)
-   (preserve-whitespace :initarg :preserve-whitespace :accessor preserve-whitespace?))
-  (:default-initargs :preserve-whitespace t))
+   (keep-whitespace :initarg :keep-whitespace :accessor keep-whitespace?)
+   (close :initarg :close :accessor must-close?))
+  (:default-initargs :keep-whitespace t
+                     :keep-comments nil
+                     :close t
+                     :stream  (make-string-output-stream)))
 
 (defun omit-whitespace? (sink)
-  (not (preserve-whitespace? sink)))
+  (not (keep-whitespace? sink)))
 
 (defun make-html5-sink (&rest args)
+  "Create an HTML5 sink.
+The arguments are KEEP-COMMENTS (default `nil'),
+KEEP-WHITESPACE (default `t'), STREAM, and CLOSE.
+
+STREAM can be used to supply a string stream to write to. The stream
+will be closed when serialization is finished. If you want it left
+open, pass `:close nil`.
+
+The stream is returned as a second value."
   (apply #'make 'html5-sink args))
 
 (def text-escapes
@@ -37,9 +50,13 @@
       (#\" "&quot;")))
   "Characters to escape in attributes.")
 
-(defmethod sax:end-document ((self html5-sink))
+(defmethod close-sink ((self html5-sink))
   (prog1 (get-output-stream-string (stream self))
     (close (stream self))))
+
+(defmethod sax:end-document ((self html5-sink))
+  (when (must-close? self)
+    (close-sink self)))
 
 (defmethod sax:start-dtd ((self html5-sink) name public-id system-id)
   (declare (ignore name public-id system-id))
@@ -49,6 +66,10 @@
   (when (and (omit-whitespace? self) (blankp text))
     (return-from sax:characters))
   (escape-to-stream text (stream self) text-escapes))
+
+(defmethod sax:comment ((self html5-sink) text)
+  (when (keep-comments? self)
+    (format (stream self) "<!-- ~a -->" text)))
 
 (defun charset-declaration? (attr)
   "Is ATTR a charset declaration from the original document?"
