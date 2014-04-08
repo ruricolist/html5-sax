@@ -65,7 +65,7 @@ The stream is returned as a second value."
 (defmethod sax:characters ((self html5-sink) text)
   (when (and (omit-whitespace? self) (blankp text))
     (return-from sax:characters))
-  (escape-to-stream text (stream self) text-escapes))
+  (escape text text-escapes :stream (stream self)))
 
 (defmethod sax:comment ((self html5-sink) text)
   (when (keep-comments? self)
@@ -96,7 +96,7 @@ The stream is returned as a second value."
                      (value (sax:attribute-value attr)))
                  (unless (string^= "xmlns" name)
                    (format (stream self) " ~a=\"" name)
-                   (escape-to-stream value (stream self) attribute-escapes)
+                   (escape value attribute-escapes :stream (stream self))
                    (write-char #\" (stream self)))))
              (write-char #\> (stream self)))))
   ;; Force a UTF-8 charset declaration where it belongs, at the top of
