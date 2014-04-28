@@ -8,7 +8,7 @@
                             :specified-p t)))
 
 (defclass html5-sink (sax:default-handler)
-  ((stream :initarg :stream :accessor stream)
+  ((stream :initarg :stream :accessor stream-of)
    (comments :initarg :keep-comments :accessor keep-comments?)
    (meta-blocked :initform nil :accessor meta-blocked?)
    (keep-whitespace :initarg :keep-whitespace :accessor keep-whitespace?)
@@ -51,8 +51,8 @@ The stream is returned as a second value."
   "Characters to escape in attributes.")
 
 (defmethod close-sink ((self html5-sink))
-  (prog1 (get-output-stream-string (stream self))
-    (close (stream self))))
+  (prog1 (get-output-stream-string (stream-of self))
+    (close (stream-of self))))
 
 (defmethod sax:end-document ((self html5-sink))
   (when (must-close? self)
@@ -60,16 +60,16 @@ The stream is returned as a second value."
 
 (defmethod sax:start-dtd ((self html5-sink) name public-id system-id)
   (declare (ignore name public-id system-id))
-  (write-string "<!doctype html>" (stream self)))
+  (write-string "<!doctype html>" (stream-of self)))
 
 (defmethod sax:characters ((self html5-sink) text)
   (when (and (omit-whitespace? self) (blankp text))
     (return-from sax:characters))
-  (escape text text-escapes :stream (stream self)))
+  (escape text text-escapes :stream (stream-of self)))
 
 (defmethod sax:comment ((self html5-sink) text)
   (when (keep-comments? self)
-    (format (stream self) "<!-- ~a -->" text)))
+    (format (stream-of self) "<!-- ~a -->" text)))
 
 (defun charset-declaration? (attr)
   "Is ATTR a charset declaration from the original document?"
@@ -89,16 +89,16 @@ The stream is returned as a second value."
       (return-from sax:start-element)))
   (let ((*print-pretty*))
     (cond ((no attrs)
-           (format (stream self) "<~a>" lname))
-          (t (format (stream self) "<~a" lname)
+           (format (stream-of self) "<~a>" lname))
+          (t (format (stream-of self) "<~a" lname)
              (dolist (attr attrs)
                (let ((name (sax:attribute-qname attr))
                      (value (sax:attribute-value attr)))
                  (unless (string^= "xmlns" name)
-                   (format (stream self) " ~a=\"" name)
-                   (escape value attribute-escapes :stream (stream self))
-                   (write-char #\" (stream self)))))
-             (write-char #\> (stream self)))))
+                   (format (stream-of self) " ~a=\"" name)
+                   (escape value attribute-escapes :stream (stream-of self))
+                   (write-char #\" (stream-of self)))))
+             (write-char #\> (stream-of self)))))
   ;; Force a UTF-8 charset declaration where it belongs, at the top of
   ;; HEAD.
   (when (string= lname "head")
@@ -113,4 +113,4 @@ The stream is returned as a second value."
     (setf (meta-blocked? self) nil)
     (return-from sax:end-element))
   (let (*print-pretty*)
-    (format (stream self) "</~a>" lname)))
+    (format (stream-of self) "</~a>" lname)))
