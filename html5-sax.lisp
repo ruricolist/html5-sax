@@ -55,13 +55,15 @@
 (defun escape-text (string &optional attr)
   "Remove any invalid XML characters from STRING."
   (declare (string string))
-  (let ((test (if attr
-                  (conjoin #'xml-character?
-                           (op (not (eql _ #\Newline))))
-                  #'xml-character?)))
-    (if (every test string)
-        string
-        (filter test string))))
+  (fbind ((test (if attr
+                    (lambda (c)
+                      (and (xml-character? c)
+                           (not (eql c #\Newline))))
+                    #'xml-character?)))
+    (escape string
+            (lambda (c)
+              (unless (test c)
+                "")))))
 
 (defun ns-prefix (ns)
   "Map NS, a namespace URI, to its prefix."
