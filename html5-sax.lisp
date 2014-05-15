@@ -137,7 +137,8 @@
                       (cond ((equal name "lang")
                              (cxml:attribute* "xml" "lang" value))
                             ((and base (equal name "href"))
-                             (ignoring puri:uri-parse-error
+                             (ignoring error ;Unfortunately PURI does
+                                             ;not name all its errors.
                                (let ((value
                                        (~> value
                                            puri:parse-uri
