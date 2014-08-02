@@ -32,7 +32,7 @@
   (:documentation "Serialize NODE, of TYPE, to the current handler."))
 
 ;; Lifted from STP.
-(defun xml-character? (c)
+(defsubst xml-character? (c)
   "Is C a character allowed in XML text?"
   (declare (optimize speed))
   (let ((code (char-code c)))
