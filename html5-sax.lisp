@@ -123,7 +123,7 @@
                  node))))
     (serialize-node :element root)))
 
-(defmethod serialize-node ((type (eql :fragment)) node)
+(defmethod serialize-node ((type (eql :document-fragment)) node)
   (html5-parser:element-map-children #'serialize node))
 
 (defmethod serialize-node ((type (eql :element)) node)
