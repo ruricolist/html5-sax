@@ -39,7 +39,7 @@ The stream is returned as a second value."
       (#\& "&amp;")
       (#\No-break_space "&nbsp;")
       (#\< "&lt;")
-      (#\> "&gt")))
+      (#\> "&gt;")))
   "Characters to escape in text.")
 
 (def attribute-escapes
